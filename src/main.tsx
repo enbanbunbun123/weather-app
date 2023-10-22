@@ -1,7 +1,6 @@
 const request = require("request");
-const dotenv = require("dotenv").config();
 
-const cities = {
+const cities: { [key: string]: { lat: number; lon: number } } = {
   hokkaido: { lat: 43.0642, lon: 141.3469 },
   aomori: { lat: 40.8246, lon: 140.74 },
   iwate: { lat: 39.7036, lon: 141.1525 },
@@ -65,7 +64,7 @@ const options = {
   json: true,
 };
 
-request(options, (error, res, body) => {
+request(options, (error: any, res: any, body: any) => {
   if (error) {
     console.error("Error fetching weather data:", error);
     process.exit(1);
