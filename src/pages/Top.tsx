@@ -1,4 +1,4 @@
-const request = require("request");
+import React, { useState } from "react";
 
 const cities: { [key: string]: { lat: number; lon: number } } = {
   hokkaido: { lat: 43.0642, lon: 141.3469 },
@@ -50,34 +50,56 @@ const cities: { [key: string]: { lat: number; lon: number } } = {
   okinawa: { lat: 26.2123, lon: 127.6809 },
 };
 
-const cityName = process.argv[2].toLowerCase();
-const cityData = cities[cityName];
+function Top() {
+  const [cityName, setCityName] = useState<string>("");
+  const [temperature, setTemperature] = useState<string | null>(null);
 
-if (!cityData) {
-  console.log("City not found");
-  process.exit(1);
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCityName(e.target.value);
+  };
+
+  const getWeatherData = async () => {
+    const cityData = cities[cityName];
+
+    if (!cityData) {
+      alert("都市名が不正です");
+      return;
+    }
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${cityData.lat}&lon=${cityData.lon}&units=metric&appid=${process.env.REACT_APP_API_KEY}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (response.status !== 200) {
+        const message = data.message || "Error fetching weather data";
+        throw new Error(message);
+      }
+
+      setTemperature(
+        `The temperature in ${
+          cityName.charAt(0).toUpperCase() + cityName.slice(1)
+        } is ${data.main.temp}°C.`
+      );
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
+
+  return (
+    <div>
+      <select value={cityName} onChange={handleCityChange}>
+        <option value="">都市を選択してください</option>
+        {Object.keys(cities).map((city) => (
+          <option key={city} value={city}>
+            {city.charAt(0).toUpperCase() + city.slice(1)}
+          </option>
+        ))}
+      </select>
+      <button onClick={getWeatherData}>Get Weather Data</button>
+      {temperature && <p>{temperature}</p>}
+    </div>
+  );
 }
 
-const options = {
-  url: `https://api.openweathermap.org/data/2.5/weather?lat=${cityData.lat}&lon=${cityData.lon}&units=metric&appid=${process.env.API_KEY}`,
-  method: "GET",
-  json: true,
-};
-
-request(options, (error: any, res: any, body: any) => {
-  if (error) {
-    console.error("Error fetching weather data:", error);
-    process.exit(1);
-  }
-
-  if (res.statusCode !== 200) {
-    console.error("API returned an error:", body.message);
-    process.exit(1);
-  }
-
-  console.log(
-    `The temperature in ${
-      cityName.charAt(0).toUpperCase() + cityName.slice(1)
-    } is ${body.main.temp}°C.`
-  );
-});
+export default Top;
