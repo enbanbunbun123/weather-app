@@ -53,6 +53,7 @@ const cities: { [key: string]: { lat: number; lon: number } } = {
 function Top() {
   const [cityName, setCityName] = useState<string>("");
   const [temperature, setTemperature] = useState<string | null>(null);
+  const [weather, setWeather] = useState<string | null>(null);
 
   const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCityName(e.target.value);
@@ -70,6 +71,7 @@ function Top() {
     try {
       const response = await fetch(url);
       const data = await response.json();
+      console.log(data);
 
       if (response.status !== 200) {
         const message = data.message || "Error fetching weather data";
@@ -81,6 +83,7 @@ function Top() {
           cityName.charAt(0).toUpperCase() + cityName.slice(1)
         } is ${data.main.temp}°C.`
       );
+      setWeather(data.weather[0].main);
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
@@ -98,6 +101,7 @@ function Top() {
       </select>
       <button onClick={getWeatherData}>Get Weather Data</button>
       {temperature && <p>{temperature}</p>}
+      {weather && <p>{weather}</p>}
     </div>
   );
 }
